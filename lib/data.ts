@@ -6,6 +6,7 @@ export interface Participant {
   bookIsbn: string;
   bookTitle: string;
   bookAuthors: string[];
+  bookDescription: string;
   wishlist: string;
   assignedBookId?: string;
   assignedReason?: string;
@@ -15,10 +16,10 @@ const STORAGE_KEY = "gift-exchange-participants";
 
 export function getParticipants(): Participant[] {
   if (typeof window === "undefined") return [];
-  
+
   const data = localStorage.getItem(STORAGE_KEY);
   if (!data) return [];
-  
+
   try {
     return JSON.parse(data);
   } catch (e) {
@@ -30,11 +31,11 @@ export function getParticipants(): Participant[] {
 export function saveParticipant(participant: Participant): Participant {
   const participants = getParticipants();
   participants.push(participant);
-  
+
   if (typeof window !== "undefined") {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(participants));
   }
-  
+
   return participant;
 }
 

@@ -21,6 +21,7 @@ export default function EntryForm({ onEntryAdded }: { onEntryAdded: () => void }
     const [loadingBook, setLoadingBook] = useState(false);
     const [submitting, setSubmitting] = useState(false);
     const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+    const [scannerKey, setScannerKey] = useState(0);
 
     const handleScan = (code: string) => {
         if (code !== isbn) {
@@ -68,6 +69,7 @@ export default function EntryForm({ onEntryAdded }: { onEntryAdded: () => void }
                 bookIsbn: isbn,
                 bookTitle: bookDetails?.title || "Unknown Title",
                 bookAuthors: bookDetails?.authors || [],
+                bookDescription: bookDetails?.description || "",
                 wishlist,
             });
 
@@ -78,6 +80,7 @@ export default function EntryForm({ onEntryAdded }: { onEntryAdded: () => void }
             setIsbn("");
             setWishlist("");
             setBookDetails(null);
+            setScannerKey(prev => prev + 1);
             onEntryAdded();
 
         } catch (error) {
@@ -96,7 +99,7 @@ export default function EntryForm({ onEntryAdded }: { onEntryAdded: () => void }
 
             <div className="mb-6">
                 <label className="block text-sm font-medium text-gray-700 mb-2">Scan Book Barcode</label>
-                <Scanner onScanSuccess={handleScan} />
+                <Scanner key={scannerKey} onScanSuccess={handleScan} />
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -108,7 +111,7 @@ export default function EntryForm({ onEntryAdded }: { onEntryAdded: () => void }
                             required
                             value={name}
                             onChange={(e) => setName(e.target.value)}
-                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm p-2 border"
+                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm p-2 border text-gray-900"
                             placeholder="Santa Claus"
                         />
                     </div>
@@ -119,7 +122,7 @@ export default function EntryForm({ onEntryAdded }: { onEntryAdded: () => void }
                             required
                             value={id}
                             onChange={(e) => setId(e.target.value)}
-                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm p-2 border"
+                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm p-2 border text-gray-900"
                             placeholder="001"
                         />
                     </div>
@@ -134,7 +137,7 @@ export default function EntryForm({ onEntryAdded }: { onEntryAdded: () => void }
                             value={isbn}
                             onChange={(e) => setIsbn(e.target.value)}
                             onBlur={() => isbn && fetchBookDetails(isbn)}
-                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm p-2 border"
+                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm p-2 border text-gray-900"
                             placeholder="978..."
                         />
                         <button
@@ -157,7 +160,10 @@ export default function EntryForm({ onEntryAdded }: { onEntryAdded: () => void }
                         )}
                         <div>
                             <h3 className="font-semibold text-gray-900">{bookDetails.title}</h3>
-                            <p className="text-sm text-gray-600">{bookDetails.authors.join(", ")}</p>
+                            <p className="text-sm text-gray-600 mb-1">{bookDetails.authors.join(", ")}</p>
+                            {bookDetails.description && (
+                                <p className="text-xs text-gray-500 line-clamp-3">{bookDetails.description}</p>
+                            )}
                         </div>
                     </div>
                 )}
@@ -169,7 +175,7 @@ export default function EntryForm({ onEntryAdded }: { onEntryAdded: () => void }
                         value={wishlist}
                         onChange={(e) => setWishlist(e.target.value)}
                         rows={3}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm p-2 border"
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm p-2 border text-gray-900"
                         placeholder="I like sci-fi and mystery novels..."
                     />
                 </div>

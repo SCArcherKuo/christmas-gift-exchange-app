@@ -4,6 +4,7 @@ import { useState } from "react";
 import EntryForm from "@/components/EntryForm";
 import ParticipantList from "@/components/ParticipantList";
 import { Gift } from "lucide-react";
+import Link from "next/link";
 
 export default function Home() {
   const [refreshTrigger, setRefreshTrigger] = useState(0);
@@ -39,12 +40,12 @@ export default function Home() {
             <ParticipantList refreshTrigger={refreshTrigger} />
 
             <div className="mt-8 text-center">
-              <a
+              <Link
                 href="/match"
                 className="inline-flex items-center justify-center px-8 py-4 border border-transparent text-lg font-medium rounded-full text-red-700 bg-white hover:bg-red-50 shadow-lg transition-all hover:scale-105"
               >
                 Start Matching Event 🎄
-              </a>
+              </Link>
             </div>
           </div>
         </div>
