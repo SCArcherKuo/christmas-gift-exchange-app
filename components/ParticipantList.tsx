@@ -2,31 +2,20 @@
 
 import { useEffect, useState } from "react";
 import { Users, RefreshCw } from "lucide-react";
-
-interface Participant {
-    id: string;
-    name: string;
-    bookTitle: string;
-    wishlist: string;
-}
+import { getParticipants, Participant } from "@/lib/data";
 
 export default function ParticipantList({ refreshTrigger }: { refreshTrigger: number }) {
     const [participants, setParticipants] = useState<Participant[]>([]);
     const [loading, setLoading] = useState(true);
 
-    const fetchParticipants = async () => {
+    const fetchParticipants = () => {
         setLoading(true);
-        try {
-            const res = await fetch("/api/participants");
-            if (res.ok) {
-                const data = await res.json();
-                setParticipants(data);
-            }
-        } catch (error) {
-            console.error("Failed to fetch participants", error);
-        } finally {
+        // Simulate async for UI consistency
+        setTimeout(() => {
+            const data = getParticipants();
+            setParticipants(data);
             setLoading(false);
-        }
+        }, 300);
     };
 
     useEffect(() => {

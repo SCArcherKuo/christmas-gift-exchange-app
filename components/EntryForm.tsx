@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Scanner from "./Scanner";
 import { Book, Loader2, CheckCircle, XCircle } from "lucide-react";
-import Image from "next/image";
+import { saveParticipant } from "@/lib/data";
 
 interface BookDetails {
     title: string;
@@ -33,12 +33,19 @@ export default function EntryForm({ onEntryAdded }: { onEntryAdded: () => void }
         setLoadingBook(true);
         setBookDetails(null);
         try {
-            const res = await fetch(`/api/book?isbn=${code}`);
+            const res = await fetch(`https://www.googleapis.com/books/v1/volumes?q=isbn:${code}`);
             if (res.ok) {
                 const data = await res.json();
-                setBookDetails(data);
+                if (data.totalItems > 0 && data.items) {
+                    const book = data.items[0].volumeInfo;
+                    setBookDetails({
+                        title: book.title,
+                        authors: book.authors || [],
+                        description: book.description || "",
+                        thumbnail: book.imageLinks?.thumbnail || "",
+                    });
+                }
             } else {
-                // Handle not found silently or show error
                 console.error("Book not found");
             }
         } catch (error) {
@@ -54,31 +61,25 @@ export default function EntryForm({ onEntryAdded }: { onEntryAdded: () => void }
         setMessage(null);
 
         try {
-            const res = await fetch("/api/participants", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    name,
-                    id,
-                    bookIsbn: isbn,
-                    bookTitle: bookDetails?.title || "Unknown Title",
-                    bookAuthors: bookDetails?.authors || [],
-                    wishlist,
-                }),
+            // Direct client-side save
+            saveParticipant({
+                id,
+                name,
+                bookIsbn: isbn,
+                bookTitle: bookDetails?.title || "Unknown Title",
+                bookAuthors: bookDetails?.authors || [],
+                wishlist,
             });
 
-            if (res.ok) {
-                setMessage({ type: "success", text: "Participant added successfully!" });
-                // Reset form
-                setName("");
-                setId("");
-                setIsbn("");
-                setWishlist("");
-                setBookDetails(null);
-                onEntryAdded();
-            } else {
-                setMessage({ type: "error", text: "Failed to add participant." });
-            }
+            setMessage({ type: "success", text: "Participant added successfully!" });
+            // Reset form
+            setName("");
+            setId("");
+            setIsbn("");
+            setWishlist("");
+            setBookDetails(null);
+            onEntryAdded();
+
         } catch (error) {
             setMessage({ type: "error", text: "An error occurred." });
         } finally {

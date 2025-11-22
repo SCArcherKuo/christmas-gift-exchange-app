@@ -1,36 +1,45 @@
-import fs from "fs/promises";
-import path from "path";
-
-const DATA_FILE = path.join(process.cwd(), "data.json");
+"use client";
 
 export interface Participant {
-    id: string;
-    name: string;
-    bookIsbn: string;
-    bookTitle: string;
-    bookAuthors: string[];
-    wishlist: string;
-    assignedBookId?: string; // ID of the book they receive
-    assignedReason?: string;
+  id: string;
+  name: string;
+  bookIsbn: string;
+  bookTitle: string;
+  bookAuthors: string[];
+  wishlist: string;
+  assignedBookId?: string;
+  assignedReason?: string;
 }
 
-export async function getParticipants(): Promise<Participant[]> {
-    try {
-        const data = await fs.readFile(DATA_FILE, "utf-8");
-        return JSON.parse(data);
-    } catch (error) {
-        // If file doesn't exist, return empty array
-        return [];
-    }
+const STORAGE_KEY = "gift-exchange-participants";
+
+export function getParticipants(): Participant[] {
+  if (typeof window === "undefined") return [];
+  
+  const data = localStorage.getItem(STORAGE_KEY);
+  if (!data) return [];
+  
+  try {
+    return JSON.parse(data);
+  } catch (e) {
+    console.error("Failed to parse participants", e);
+    return [];
+  }
 }
 
-export async function saveParticipant(participant: Participant) {
-    const participants = await getParticipants();
-    participants.push(participant);
-    await fs.writeFile(DATA_FILE, JSON.stringify(participants, null, 2));
-    return participant;
+export function saveParticipant(participant: Participant): Participant {
+  const participants = getParticipants();
+  participants.push(participant);
+  
+  if (typeof window !== "undefined") {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(participants));
+  }
+  
+  return participant;
 }
 
-export async function saveAllParticipants(participants: Participant[]) {
-    await fs.writeFile(DATA_FILE, JSON.stringify(participants, null, 2));
+export function saveAllParticipants(participants: Participant[]) {
+  if (typeof window !== "undefined") {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(participants));
+  }
 }
