@@ -15,13 +15,16 @@ export default function MatchPage() {
     const [error, setError] = useState("");
 
     useEffect(() => {
-        // Initial fetch from localStorage
-        const data = getParticipants();
-        setParticipants(data);
-        // Check if any have matches
-        if (data.length > 0 && data[0].assignedBookId) {
-            setMatched(true);
-        }
+        // Initial fetch
+        const fetchData = async () => {
+            const data = await getParticipants();
+            setParticipants(data);
+            // Check if any have matches
+            if (data.length > 0 && data[0].assignedBookId) {
+                setMatched(true);
+            }
+        };
+        fetchData();
     }, []);
 
     const handleMatch = async () => {
@@ -34,15 +37,18 @@ export default function MatchPage() {
             return;
         }
 
-        if (participants.length < 2) {
+        // Refresh participants before matching to ensure we have latest
+        const currentParticipants = await getParticipants();
+        if (currentParticipants.length < 2) {
             setError("Need at least 2 participants to match.");
             setLoading(false);
             return;
         }
+        setParticipants(currentParticipants);
 
         try {
             const genAI = new GoogleGenerativeAI(apiKey);
-            const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+            const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
             const prompt = `
         You are a Secret Santa matching engine.
@@ -55,7 +61,7 @@ export default function MatchPage() {
         4. Provide a fun, Christmas-themed reason for the match.
         
         Participants:
-        ${JSON.stringify(participants.map(p => ({
+        ${JSON.stringify(currentParticipants.map(p => ({
                 id: p.id,
                 name: p.name,
                 broughtBookId: p.id, // Using participant ID as book ID for simplicity since 1 person = 1 book
@@ -75,25 +81,21 @@ export default function MatchPage() {
         Do not include markdown formatting like \`\`\`json. Just the raw JSON.
       `;
 
-            console.log("Calling Gemini API...");
             const result = await model.generateContent(prompt);
-            console.log("API Response received:", result);
-
             const responseText = result.response.text().replace(/```json/g, "").replace(/```/g, "").trim();
-            console.log("Parsed response text:", responseText);
 
             let matches;
             try {
                 matches = JSON.parse(responseText);
             } catch (e) {
-                console.error("Failed to parse AI response", responseText, e);
-                setError("AI returned invalid format. Please try again.");
+                console.error("Failed to parse AI response", responseText);
+                setError("AI returned invalid format");
                 setLoading(false);
                 return;
             }
 
             // Update participants with match data
-            const updatedParticipants = participants.map(p => {
+            const updatedParticipants = currentParticipants.map(p => {
                 const match = matches.find((m: any) => m.recipientId === p.id);
                 if (match) {
                     return {
@@ -105,27 +107,13 @@ export default function MatchPage() {
                 return p;
             });
 
-            saveAllParticipants(updatedParticipants);
+            await saveAllParticipants(updatedParticipants);
             setParticipants(updatedParticipants);
             setMatched(true);
 
-        } catch (err: any) {
+        } catch (err) {
             console.error("Matching error:", err);
-
-            // Provide more specific error messages
-            let errorMessage = "An error occurred during matching.";
-
-            if (err.message?.includes("API_KEY_INVALID") || err.message?.includes("API key")) {
-                errorMessage = "Invalid API key. Please check your Gemini API key and try again.";
-            } else if (err.message?.includes("quota") || err.message?.includes("limit")) {
-                errorMessage = "API quota exceeded. Please try again later or check your API limits.";
-            } else if (err.message?.includes("network") || err.message?.includes("fetch")) {
-                errorMessage = "Network error. Please check your internet connection.";
-            } else if (err.message) {
-                errorMessage = `Error: ${err.message}`;
-            }
-
-            setError(errorMessage);
+            setError("An error occurred during matching. Check your API Key.");
         } finally {
             setLoading(false);
         }
