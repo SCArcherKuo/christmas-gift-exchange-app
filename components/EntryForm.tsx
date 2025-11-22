@@ -22,6 +22,9 @@ export default function EntryForm({ onEntryAdded }: { onEntryAdded: () => void }
     const [submitting, setSubmitting] = useState(false);
     const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
     const [scannerKey, setScannerKey] = useState(0);
+    const [manualEntry, setManualEntry] = useState(false);
+    const [manualTitle, setManualTitle] = useState("");
+    const [manualAuthors, setManualAuthors] = useState("");
 
     const handleScan = (code: string) => {
         if (code !== isbn) {
@@ -66,10 +69,10 @@ export default function EntryForm({ onEntryAdded }: { onEntryAdded: () => void }
             saveParticipant({
                 id,
                 name,
-                bookIsbn: isbn,
-                bookTitle: bookDetails?.title || "Unknown Title",
-                bookAuthors: bookDetails?.authors || [],
-                bookDescription: bookDetails?.description || "",
+                bookIsbn: isbn || "N/A",
+                bookTitle: manualEntry ? manualTitle : (bookDetails?.title || "Unknown Title"),
+                bookAuthors: manualEntry ? (manualAuthors ? [manualAuthors] : []) : (bookDetails?.authors || []),
+                bookDescription: manualEntry ? "" : (bookDetails?.description || ""),
                 wishlist,
             });
 
@@ -80,6 +83,8 @@ export default function EntryForm({ onEntryAdded }: { onEntryAdded: () => void }
             setIsbn("");
             setWishlist("");
             setBookDetails(null);
+            setManualTitle("");
+            setManualAuthors("");
             setScannerKey(prev => prev + 1);
             onEntryAdded();
 
@@ -98,8 +103,20 @@ export default function EntryForm({ onEntryAdded }: { onEntryAdded: () => void }
             </h2>
 
             <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Scan Book Barcode</label>
+                <label className="block text-sm font-medium text-gray-900 mb-2">Scan Book Barcode</label>
                 <Scanner key={scannerKey} onScanSuccess={handleScan} />
+            </div>
+
+            <div className="mb-4">
+                <label className="flex items-center gap-2 text-sm text-gray-700">
+                    <input
+                        type="checkbox"
+                        checked={manualEntry}
+                        onChange={(e) => setManualEntry(e.target.checked)}
+                        className="rounded border-gray-300 text-red-600 focus:ring-red-500"
+                    />
+                    Enter book details manually (if ISBN lookup fails)
+                </label>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -129,21 +146,22 @@ export default function EntryForm({ onEntryAdded }: { onEntryAdded: () => void }
                 </div>
 
                 <div>
-                    <label className="block text-sm font-medium text-gray-700">ISBN</label>
+                    <label className="block text-sm font-medium text-gray-700">ISBN {manualEntry && "(Optional)"}</label>
                     <div className="flex gap-2">
                         <input
                             type="text"
-                            required
+                            required={!manualEntry}
                             value={isbn}
                             onChange={(e) => setIsbn(e.target.value)}
-                            onBlur={() => isbn && fetchBookDetails(isbn)}
+                            onBlur={() => isbn && !manualEntry && fetchBookDetails(isbn)}
                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm p-2 border text-gray-900"
                             placeholder="978..."
+                            disabled={manualEntry}
                         />
                         <button
                             type="button"
                             onClick={() => fetchBookDetails(isbn)}
-                            disabled={loadingBook || !isbn}
+                            disabled={loadingBook || !isbn || manualEntry}
                             className="mt-1 px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 disabled:opacity-50"
                         >
                             Lookup
@@ -153,7 +171,7 @@ export default function EntryForm({ onEntryAdded }: { onEntryAdded: () => void }
 
                 {loadingBook && <div className="text-sm text-gray-500 flex items-center gap-2"><Loader2 className="w-4 h-4 animate-spin" /> Fetching book info...</div>}
 
-                {bookDetails && (
+                {bookDetails && !manualEntry && (
                     <div className="bg-gray-50 p-4 rounded-lg flex gap-4 items-start border border-gray-200">
                         {bookDetails.thumbnail && (
                             <img src={bookDetails.thumbnail} alt="Cover" className="w-16 h-24 object-cover rounded shadow-sm" />
@@ -164,6 +182,32 @@ export default function EntryForm({ onEntryAdded }: { onEntryAdded: () => void }
                             {bookDetails.description && (
                                 <p className="text-xs text-gray-500 line-clamp-3">{bookDetails.description}</p>
                             )}
+                        </div>
+                    </div>
+                )}
+
+                {manualEntry && (
+                    <div className="space-y-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700">Book Title *</label>
+                            <input
+                                type="text"
+                                required
+                                value={manualTitle}
+                                onChange={(e) => setManualTitle(e.target.value)}
+                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm p-2 border text-gray-900"
+                                placeholder="Enter book title"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700">Author(s) (Optional)</label>
+                            <input
+                                type="text"
+                                value={manualAuthors}
+                                onChange={(e) => setManualAuthors(e.target.value)}
+                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm p-2 border text-gray-900"
+                                placeholder="Enter author name(s)"
+                            />
                         </div>
                     </div>
                 )}

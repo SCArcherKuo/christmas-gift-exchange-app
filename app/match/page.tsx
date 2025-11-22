@@ -75,15 +75,19 @@ export default function MatchPage() {
         Do not include markdown formatting like \`\`\`json. Just the raw JSON.
       `;
 
+            console.log("Calling Gemini API...");
             const result = await model.generateContent(prompt);
+            console.log("API Response received:", result);
+
             const responseText = result.response.text().replace(/```json/g, "").replace(/```/g, "").trim();
+            console.log("Parsed response text:", responseText);
 
             let matches;
             try {
                 matches = JSON.parse(responseText);
             } catch (e) {
-                console.error("Failed to parse AI response", responseText);
-                setError("AI returned invalid format");
+                console.error("Failed to parse AI response", responseText, e);
+                setError("AI returned invalid format. Please try again.");
                 setLoading(false);
                 return;
             }
@@ -105,9 +109,23 @@ export default function MatchPage() {
             setParticipants(updatedParticipants);
             setMatched(true);
 
-        } catch (err) {
+        } catch (err: any) {
             console.error("Matching error:", err);
-            setError("An error occurred during matching. Check your API Key.");
+
+            // Provide more specific error messages
+            let errorMessage = "An error occurred during matching.";
+
+            if (err.message?.includes("API_KEY_INVALID") || err.message?.includes("API key")) {
+                errorMessage = "Invalid API key. Please check your Gemini API key and try again.";
+            } else if (err.message?.includes("quota") || err.message?.includes("limit")) {
+                errorMessage = "API quota exceeded. Please try again later or check your API limits.";
+            } else if (err.message?.includes("network") || err.message?.includes("fetch")) {
+                errorMessage = "Network error. Please check your internet connection.";
+            } else if (err.message) {
+                errorMessage = `Error: ${err.message}`;
+            }
+
+            setError(errorMessage);
         } finally {
             setLoading(false);
         }

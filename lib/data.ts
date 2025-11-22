@@ -44,3 +44,20 @@ export function saveAllParticipants(participants: Participant[]) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(participants));
   }
 }
+
+export function deleteParticipant(id: string) {
+  const participants = getParticipants();
+  const filtered = participants.filter(p => p.id !== id);
+
+  if (typeof window !== "undefined") {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(filtered));
+  }
+
+  return filtered;
+}
+
+export function clearAllParticipants() {
+  if (typeof window !== "undefined") {
+    localStorage.removeItem(STORAGE_KEY);
+  }
+}
