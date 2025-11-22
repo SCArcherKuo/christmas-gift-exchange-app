@@ -32,6 +32,8 @@ jobs:
         run: pnpm install
       - name: Build
         run: pnpm build
+        env:
+          NEXT_PUBLIC_GOOGLE_SCRIPT_URL: ${{ secrets.NEXT_PUBLIC_GOOGLE_SCRIPT_URL }}
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
