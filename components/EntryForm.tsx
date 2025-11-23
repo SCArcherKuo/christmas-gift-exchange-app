@@ -86,7 +86,7 @@ export default function EntryForm({ onEntryAdded, refreshTrigger }: { onEntryAdd
         setId(p.id);
         setWishlist(p.wishlist);
         if (p.bookIsbn) {
-            setMessage({ type: "error", text: "Warning: This participant already has a book checked in." });
+            setMessage({ type: "error", text: "Note: This participant already has a book. Submitting will update their book information." });
             setIsbn(p.bookIsbn);
             setBookTitle(p.bookTitle);
             setBookAuthors(p.bookAuthors.join(", "));
@@ -109,7 +109,9 @@ export default function EntryForm({ onEntryAdded, refreshTrigger }: { onEntryAdd
 
         // Validation: Check for duplicate ID in 'new' mode
         if (mode === "new") {
-            const duplicate = existingParticipants.find(p => String(p.id).toLowerCase() === id.toLowerCase());
+            // Fetch fresh participant data to ensure we have the latest list for duplicate checking
+            const currentParticipants = await getParticipants();
+            const duplicate = currentParticipants.find(p => String(p.id).toLowerCase() === id.toLowerCase());
             if (duplicate) {
                 setMessage({ type: "error", text: `ID '${id}' already exists (Participant: ${duplicate.name}). Please use a unique ID.` });
                 setSubmitting(false);
@@ -353,7 +355,7 @@ export default function EntryForm({ onEntryAdded, refreshTrigger }: { onEntryAdd
                             disabled={submitting}
                             className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50"
                         >
-                            {submitting ? "Saving..." : (mode === "checkin" ? "Check In & Update" : "Add Participant")}
+                            {submitting ? "Saving..." : (mode === "checkin" ? "Check In & Update Record" : "Add Participant")}
                         </button>
 
                         {message && (

@@ -59,6 +59,7 @@ export default function ParticipantList({ refreshTrigger }: { refreshTrigger: nu
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Brought Book</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Wishlist</th>
                             <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                         </tr>
@@ -69,6 +70,11 @@ export default function ParticipantList({ refreshTrigger }: { refreshTrigger: nu
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{p.id}</td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{p.name}</td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 truncate max-w-xs" title={p.bookTitle}>{p.bookTitle}</td>
+                                <td className="px-6 py-4 text-sm text-gray-600 max-w-md">
+                                    <div className="line-clamp-2" title={p.bookDescription || 'No description'}>
+                                        {p.bookDescription || <span className="text-gray-400 italic">No description</span>}
+                                    </div>
+                                </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 truncate max-w-xs" title={p.wishlist}>{p.wishlist}</td>
                                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                     <button
@@ -83,7 +89,7 @@ export default function ParticipantList({ refreshTrigger }: { refreshTrigger: nu
                         ))}
                         {participants.length === 0 && !loading && (
                             <tr>
-                                <td colSpan={5} className="px-6 py-4 text-center text-sm text-gray-500">No participants yet.</td>
+                                <td colSpan={6} className="px-6 py-4 text-center text-sm text-gray-500">No participants yet.</td>
                             </tr>
                         )}
                     </tbody>
