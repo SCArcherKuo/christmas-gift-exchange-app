@@ -133,8 +133,8 @@ export default function EntryForm({ onEntryAdded }: { onEntryAdded: () => void }
     };
 
     const filteredParticipants = existingParticipants.filter(p =>
-        p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        p.id.toLowerCase().includes(searchQuery.toLowerCase())
+        String(p.name).toLowerCase().includes(searchQuery.toLowerCase()) ||
+        String(p.id).toLowerCase().includes(searchQuery.toLowerCase())
     );
 
     return (
