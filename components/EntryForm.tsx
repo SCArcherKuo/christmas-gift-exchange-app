@@ -109,9 +109,17 @@ export default function EntryForm({ onEntryAdded, refreshTrigger }: { onEntryAdd
 
         // Validation: Check for duplicate ID in 'new' mode
         if (mode === "new") {
+            // Validate ID is a positive integer
+            const idNum = parseInt(id, 10);
+            if (isNaN(idNum) || idNum <= 0 || !Number.isInteger(idNum) || id !== idNum.toString()) {
+                setMessage({ type: "error", text: "ID must be a positive integer (serial number). Please enter a valid number." });
+                setSubmitting(false);
+                return;
+            }
+
             // Fetch fresh participant data to ensure we have the latest list for duplicate checking
             const currentParticipants = await getParticipants();
-            const duplicate = currentParticipants.find(p => String(p.id).toLowerCase() === id.toLowerCase());
+            const duplicate = currentParticipants.find(p => String(p.id) === String(id));
             if (duplicate) {
                 setMessage({ type: "error", text: `ID '${id}' already exists (Participant: ${duplicate.name}). Please use a unique ID.` });
                 setSubmitting(false);
@@ -260,15 +268,18 @@ export default function EntryForm({ onEntryAdded, refreshTrigger }: { onEntryAdd
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700">Participant ID</label>
+                                <label className="block text-sm font-medium text-gray-700">Participant ID (Serial Number)</label>
                                 <input
-                                    type="text"
+                                    type="number"
                                     required
+                                    min="1"
+                                    step="1"
+                                    pattern="[0-9]+"
                                     value={id}
                                     onChange={(e) => setId(e.target.value)}
                                     disabled={mode === "checkin"}
                                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm p-2 border disabled:bg-gray-100 disabled:text-gray-500 placeholder:text-gray-700"
-                                    placeholder="001"
+                                    placeholder="1"
                                 />
                             </div>
                         </div>

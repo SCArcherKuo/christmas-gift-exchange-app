@@ -93,16 +93,15 @@ export async function deleteParticipant(id: string): Promise<void> {
       // Remove no-cors to allow JSON body to be sent
       const response = await fetch(API_URL, {
         method: "POST",
+        mode: "no-cors",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ action: 'delete', id }),
       });
 
-      // Log any issues but don't fail
-      if (!response.ok) {
-        console.warn("Delete request completed but response not OK:", response.status);
-      }
+      // With no-cors, we can't check response.ok
+      console.log("Delete request sent to Google Sheets");
     } catch (error) {
       console.error("Failed to delete from Google Sheets", error);
     }

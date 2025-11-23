@@ -3,11 +3,13 @@
 import { useEffect, useState } from "react";
 import { Users, RefreshCw, Trash2, Loader2 } from "lucide-react";
 import { getParticipants, deleteParticipant, Participant } from "@/lib/data";
+import DeleteConfirmModal from "./DeleteConfirmModal";
 
 export default function ParticipantList({ refreshTrigger }: { refreshTrigger: number }) {
     const [participants, setParticipants] = useState<Participant[]>([]);
     const [loading, setLoading] = useState(true);
-    const [deletingId, setDeletingId] = useState<string | null>(null);
+    const [participantToDelete, setParticipantToDelete] = useState<Participant | null>(null);
+    const [isDeleting, setIsDeleting] = useState(false);
 
     const fetchParticipants = async () => {
         setLoading(true);
@@ -25,18 +27,27 @@ export default function ParticipantList({ refreshTrigger }: { refreshTrigger: nu
         fetchParticipants();
     }, [refreshTrigger]);
 
-    const handleDelete = async (id: string) => {
-        if (!confirm("Are you sure you want to delete this participant?")) return;
+    const handleDeleteClick = (participant: Participant, e?: React.MouseEvent) => {
+        if (e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        setParticipantToDelete(participant);
+    };
 
-        setDeletingId(id);
+    const handleConfirmDelete = async () => {
+        if (!participantToDelete) return;
+
+        setIsDeleting(true);
         try {
-            await deleteParticipant(id);
-            await fetchParticipants(); // Refresh list
+            await deleteParticipant(participantToDelete.id);
+            await fetchParticipants();
         } catch (error) {
             console.error("Failed to delete", error);
             alert("Failed to delete participant.");
         } finally {
-            setDeletingId(null);
+            setIsDeleting(false);
+            setParticipantToDelete(null);
         }
     };
 
@@ -78,11 +89,12 @@ export default function ParticipantList({ refreshTrigger }: { refreshTrigger: nu
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 truncate max-w-xs" title={p.wishlist}>{p.wishlist}</td>
                                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                     <button
-                                        onClick={() => handleDelete(p.id)}
-                                        disabled={deletingId === p.id}
-                                        className="text-red-600 hover:text-red-900 disabled:opacity-50"
+                                        type="button"
+                                        onClick={(e) => handleDeleteClick(p, e)}
+                                        className="text-red-600 hover:text-red-900 transition-colors"
+                                        title="Delete participant"
                                     >
-                                        {deletingId === p.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+                                        <Trash2 className="w-4 h-4" />
                                     </button>
                                 </td>
                             </tr>
@@ -95,6 +107,16 @@ export default function ParticipantList({ refreshTrigger }: { refreshTrigger: nu
                     </tbody>
                 </table>
             </div>
-        </div>
+
+
+            <DeleteConfirmModal
+                isOpen={!!participantToDelete}
+                onClose={() => setParticipantToDelete(null)}
+                onConfirm={handleConfirmDelete}
+                title="Delete Participant"
+                message={`Are you sure you want to delete ${participantToDelete?.name}? This action cannot be undone.`}
+                isDeleting={isDeleting}
+            />
+        </div >
     );
 }
