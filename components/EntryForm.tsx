@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Scanner from "./Scanner";
-import { Book, Loader2, CheckCircle, XCircle, Search, UserCheck, UserPlus } from "lucide-react";
+import { Book, Loader2, CheckCircle, XCircle, Search, UserCheck, UserPlus, Edit3 } from "lucide-react";
 import { saveParticipant, getParticipants, Participant } from "@/lib/data";
 
 interface BookDetails {
@@ -22,7 +22,14 @@ export default function EntryForm({ onEntryAdded }: { onEntryAdded: () => void }
     const [id, setId] = useState("");
     const [isbn, setIsbn] = useState("");
     const [wishlist, setWishlist] = useState("");
-    const [bookDetails, setBookDetails] = useState<BookDetails | null>(null);
+
+    // Book fields
+    const [bookTitle, setBookTitle] = useState("");
+    const [bookAuthors, setBookAuthors] = useState("");
+    const [bookDescription, setBookDescription] = useState("");
+    const [bookThumbnail, setBookThumbnail] = useState("");
+    const [manualEntry, setManualEntry] = useState(false);
+
     const [loadingBook, setLoadingBook] = useState(false);
     const [submitting, setSubmitting] = useState(false);
     const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
@@ -46,25 +53,28 @@ export default function EntryForm({ onEntryAdded }: { onEntryAdded: () => void }
 
     const fetchBookDetails = async (code: string) => {
         setLoadingBook(true);
-        setBookDetails(null);
+        setManualEntry(false); // Reset manual entry if scanning
         try {
             const res = await fetch(`https://www.googleapis.com/books/v1/volumes?q=isbn:${code}`);
             if (res.ok) {
                 const data = await res.json();
                 if (data.totalItems > 0 && data.items) {
                     const book = data.items[0].volumeInfo;
-                    setBookDetails({
-                        title: book.title,
-                        authors: book.authors || [],
-                        description: book.description || "",
-                        thumbnail: book.imageLinks?.thumbnail || "",
-                    });
+                    setBookTitle(book.title || "");
+                    setBookAuthors(book.authors ? book.authors.join(", ") : "");
+                    setBookDescription(book.description || "");
+                    setBookThumbnail(book.imageLinks?.thumbnail || "");
+                } else {
+                    setMessage({ type: "error", text: "Book not found. Please enter details manually." });
+                    setManualEntry(true);
                 }
             } else {
                 console.error("Book not found");
+                setManualEntry(true);
             }
         } catch (error) {
             console.error("Error fetching book", error);
+            setManualEntry(true);
         } finally {
             setLoadingBook(false);
         }
@@ -75,15 +85,19 @@ export default function EntryForm({ onEntryAdded }: { onEntryAdded: () => void }
         setName(p.name);
         setId(p.id);
         setWishlist(p.wishlist);
-        // If they already have a book, maybe warn or show it?
         if (p.bookIsbn) {
             setMessage({ type: "error", text: "Warning: This participant already has a book checked in." });
             setIsbn(p.bookIsbn);
-            fetchBookDetails(p.bookIsbn);
+            setBookTitle(p.bookTitle);
+            setBookAuthors(p.bookAuthors.join(", "));
+            setBookDescription(p.bookDescription || "");
         } else {
             setMessage(null);
             setIsbn("");
-            setBookDetails(null);
+            setBookTitle("");
+            setBookAuthors("");
+            setBookDescription("");
+            setBookThumbnail("");
         }
         setSearchQuery("");
     };
@@ -93,13 +107,24 @@ export default function EntryForm({ onEntryAdded }: { onEntryAdded: () => void }
         setSubmitting(true);
         setMessage(null);
 
+        // Validation: Check for duplicate ID in 'new' mode
+        if (mode === "new") {
+            const duplicate = existingParticipants.find(p => String(p.id).toLowerCase() === id.toLowerCase());
+            if (duplicate) {
+                setMessage({ type: "error", text: `ID '${id}' already exists (Participant: ${duplicate.name}). Please use a unique ID.` });
+                setSubmitting(false);
+                return;
+            }
+        }
+
         try {
             await saveParticipant({
                 id,
                 name,
                 bookIsbn: isbn,
-                bookTitle: bookDetails?.title || "Unknown Title",
-                bookAuthors: bookDetails?.authors || [],
+                bookTitle: bookTitle || "Unknown Title",
+                bookAuthors: bookAuthors ? bookAuthors.split(",").map(a => a.trim()) : [],
+                bookDescription,
                 wishlist,
             });
 
@@ -117,7 +142,11 @@ export default function EntryForm({ onEntryAdded }: { onEntryAdded: () => void }
                 setWishlist("");
             }
             setIsbn("");
-            setBookDetails(null);
+            setBookTitle("");
+            setBookAuthors("");
+            setBookDescription("");
+            setBookThumbnail("");
+            setManualEntry(false);
 
             // Refresh list
             setTimeout(() => {
@@ -223,7 +252,7 @@ export default function EntryForm({ onEntryAdded }: { onEntryAdded: () => void }
                                     required
                                     value={name}
                                     onChange={(e) => setName(e.target.value)}
-                                    disabled={mode === "checkin"} // Disable editing name in checkin mode
+                                    disabled={mode === "checkin"}
                                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm p-2 border disabled:bg-gray-100 disabled:text-gray-500"
                                     placeholder="Santa Claus"
                                 />
@@ -235,49 +264,77 @@ export default function EntryForm({ onEntryAdded }: { onEntryAdded: () => void }
                                     required
                                     value={id}
                                     onChange={(e) => setId(e.target.value)}
-                                    disabled={mode === "checkin"} // Disable editing ID in checkin mode
+                                    disabled={mode === "checkin"}
                                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm p-2 border disabled:bg-gray-100 disabled:text-gray-500"
                                     placeholder="001"
                                 />
                             </div>
                         </div>
 
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700">ISBN</label>
+                        {/* Book Details Section */}
+                        <div className="bg-gray-50 p-4 rounded-lg border border-gray-200 space-y-3">
+                            <div className="flex justify-between items-center">
+                                <h3 className="font-medium text-gray-900">Book Details</h3>
+                                <button
+                                    type="button"
+                                    onClick={() => setManualEntry(!manualEntry)}
+                                    className="text-xs text-red-600 hover:underline flex items-center gap-1"
+                                >
+                                    <Edit3 className="w-3 h-3" /> {manualEntry ? "Cancel Edit" : "Edit Manually"}
+                                </button>
+                            </div>
+
                             <div className="flex gap-2">
                                 <input
                                     type="text"
-                                    required
                                     value={isbn}
                                     onChange={(e) => setIsbn(e.target.value)}
-                                    onBlur={() => isbn && fetchBookDetails(isbn)}
-                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm p-2 border"
-                                    placeholder="978..."
+                                    onBlur={() => isbn && !manualEntry && fetchBookDetails(isbn)}
+                                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm p-2 border"
+                                    placeholder="ISBN (Scan or Type)"
                                 />
                                 <button
                                     type="button"
                                     onClick={() => fetchBookDetails(isbn)}
                                     disabled={loadingBook || !isbn}
-                                    className="mt-1 px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 disabled:opacity-50"
+                                    className="px-3 py-2 bg-white border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 disabled:opacity-50 text-sm"
                                 >
                                     Lookup
                                 </button>
                             </div>
-                        </div>
 
-                        {loadingBook && <div className="text-sm text-gray-500 flex items-center gap-2"><Loader2 className="w-4 h-4 animate-spin" /> Fetching book info...</div>}
+                            {loadingBook && <div className="text-sm text-gray-500 flex items-center gap-2"><Loader2 className="w-4 h-4 animate-spin" /> Fetching info...</div>}
 
-                        {bookDetails && (
-                            <div className="bg-gray-50 p-4 rounded-lg flex gap-4 items-start border border-gray-200">
-                                {bookDetails.thumbnail && (
-                                    <img src={bookDetails.thumbnail} alt="Cover" className="w-16 h-24 object-cover rounded shadow-sm" />
-                                )}
-                                <div>
-                                    <h3 className="font-semibold text-gray-900">{bookDetails.title}</h3>
-                                    <p className="text-sm text-gray-600">{bookDetails.authors.join(", ")}</p>
-                                </div>
+                            <div className="grid grid-cols-1 gap-3">
+                                <input
+                                    type="text"
+                                    value={bookTitle}
+                                    onChange={(e) => setBookTitle(e.target.value)}
+                                    disabled={!manualEntry}
+                                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm p-2 border disabled:bg-gray-100"
+                                    placeholder="Book Title"
+                                />
+                                <input
+                                    type="text"
+                                    value={bookAuthors}
+                                    onChange={(e) => setBookAuthors(e.target.value)}
+                                    disabled={!manualEntry}
+                                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm p-2 border disabled:bg-gray-100"
+                                    placeholder="Authors (comma separated)"
+                                />
+                                <textarea
+                                    value={bookDescription}
+                                    onChange={(e) => setBookDescription(e.target.value)}
+                                    disabled={!manualEntry}
+                                    rows={3}
+                                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm p-2 border disabled:bg-gray-100"
+                                    placeholder="Book Description / Summary"
+                                />
                             </div>
-                        )}
+                            {bookThumbnail && (
+                                <img src={bookThumbnail} alt="Cover" className="w-16 h-24 object-cover rounded shadow-sm" />
+                            )}
+                        </div>
 
                         <div>
                             <label className="block text-sm font-medium text-gray-700">Wishlist / Preferences</label>

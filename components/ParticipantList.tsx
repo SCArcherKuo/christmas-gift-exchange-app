@@ -1,12 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Users, RefreshCw } from "lucide-react";
-import { getParticipants, Participant } from "@/lib/data";
+import { Users, RefreshCw, Trash2, Loader2 } from "lucide-react";
+import { getParticipants, deleteParticipant, Participant } from "@/lib/data";
 
 export default function ParticipantList({ refreshTrigger }: { refreshTrigger: number }) {
     const [participants, setParticipants] = useState<Participant[]>([]);
     const [loading, setLoading] = useState(true);
+    const [deletingId, setDeletingId] = useState<string | null>(null);
 
     const fetchParticipants = async () => {
         setLoading(true);
@@ -23,6 +24,21 @@ export default function ParticipantList({ refreshTrigger }: { refreshTrigger: nu
     useEffect(() => {
         fetchParticipants();
     }, [refreshTrigger]);
+
+    const handleDelete = async (id: string) => {
+        if (!confirm("Are you sure you want to delete this participant?")) return;
+
+        setDeletingId(id);
+        try {
+            await deleteParticipant(id);
+            await fetchParticipants(); // Refresh list
+        } catch (error) {
+            console.error("Failed to delete", error);
+            alert("Failed to delete participant.");
+        } finally {
+            setDeletingId(null);
+        }
+    };
 
     return (
         <div className="bg-white p-6 rounded-xl shadow-md border border-gray-100">
@@ -44,6 +60,7 @@ export default function ParticipantList({ refreshTrigger }: { refreshTrigger: nu
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Brought Book</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Wishlist</th>
+                            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                         </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
@@ -53,11 +70,20 @@ export default function ParticipantList({ refreshTrigger }: { refreshTrigger: nu
                                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{p.name}</td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 truncate max-w-xs" title={p.bookTitle}>{p.bookTitle}</td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 truncate max-w-xs" title={p.wishlist}>{p.wishlist}</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                    <button
+                                        onClick={() => handleDelete(p.id)}
+                                        disabled={deletingId === p.id}
+                                        className="text-red-600 hover:text-red-900 disabled:opacity-50"
+                                    >
+                                        {deletingId === p.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+                                    </button>
+                                </td>
                             </tr>
                         ))}
                         {participants.length === 0 && !loading && (
                             <tr>
-                                <td colSpan={4} className="px-6 py-4 text-center text-sm text-gray-500">No participants yet.</td>
+                                <td colSpan={5} className="px-6 py-4 text-center text-sm text-gray-500">No participants yet.</td>
                             </tr>
                         )}
                     </tbody>

@@ -48,6 +48,7 @@ export default function MatchPage() {
 
         try {
             const genAI = new GoogleGenerativeAI(apiKey);
+            // Using the latest stable flash model as requested
             const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
             const prompt = `
@@ -58,7 +59,8 @@ export default function MatchPage() {
         1. Each participant must receive exactly one book.
         2. A participant CANNOT receive the book they brought.
         3. Try to match the book to the participant's wishlist as best as possible.
-        4. Provide a fun, Christmas-themed reason for the match.
+        4. USE THE BOOK DESCRIPTION to understand the book's content and match it to the wishlist.
+        5. Provide a fun, Christmas-themed reason for the match, referencing the book's content.
         
         Participants:
         ${JSON.stringify(currentParticipants.map(p => ({
@@ -67,6 +69,7 @@ export default function MatchPage() {
                 broughtBookId: p.id, // Using participant ID as book ID for simplicity since 1 person = 1 book
                 broughtBookTitle: p.bookTitle,
                 broughtBookAuthors: p.bookAuthors,
+                broughtBookDescription: p.bookDescription, // Added description
                 wishlist: p.wishlist
             })), null, 2)}
 
