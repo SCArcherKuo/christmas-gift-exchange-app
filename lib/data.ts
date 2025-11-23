@@ -13,6 +13,7 @@ export interface Participant {
 
 const STORAGE_KEY = "gift-exchange-participants";
 const API_URL = process.env.NEXT_PUBLIC_GOOGLE_SCRIPT_URL;
+console.log("Google Script URL Configured:", !!API_URL, API_URL ? API_URL.substring(0, 10) + "..." : "N/A");
 
 export async function getParticipants(): Promise<Participant[]> {
   // If API URL is set, fetch from Google Sheets
@@ -26,6 +27,8 @@ export async function getParticipants(): Promise<Participant[]> {
     } catch (error) {
       console.error("Failed to fetch from Google Sheets", error);
     }
+  } else {
+    console.warn("Google Sheets API URL is not configured. Falling back to LocalStorage. Check your .env.local or GitHub Secrets.");
   }
 
   // Fallback to LocalStorage
