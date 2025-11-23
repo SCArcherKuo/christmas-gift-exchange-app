@@ -48,8 +48,8 @@ export default function MatchPage() {
 
         try {
             const genAI = new GoogleGenerativeAI(apiKey);
-            // Using the latest stable flash model as requested
-            const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+            // Using Gemini 2.5 Flash as requested
+            const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
             const prompt = `
         You are a Secret Santa matching engine.
@@ -149,7 +149,7 @@ export default function MatchPage() {
                                     value={apiKey}
                                     onChange={(e) => setApiKey(e.target.value)}
                                     placeholder="Enter your API Key"
-                                    className="pl-10 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm p-2 border"
+                                    className="pl-10 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm p-2 border placeholder:text-gray-700"
                                 />
                             </div>
                             <p className="text-xs text-gray-500 mt-1">Required for the AI magic to work.</p>

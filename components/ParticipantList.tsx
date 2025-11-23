@@ -66,10 +66,10 @@ export default function ParticipantList({ refreshTrigger }: { refreshTrigger: nu
                     <tbody className="bg-white divide-y divide-gray-200">
                         {participants.map((p) => (
                             <tr key={p.id}>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{p.id}</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{p.id}</td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{p.name}</td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 truncate max-w-xs" title={p.bookTitle}>{p.bookTitle}</td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 truncate max-w-xs" title={p.wishlist}>{p.wishlist}</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 truncate max-w-xs" title={p.bookTitle}>{p.bookTitle}</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 truncate max-w-xs" title={p.wishlist}>{p.wishlist}</td>
                                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                     <button
                                         onClick={() => handleDelete(p.id)}

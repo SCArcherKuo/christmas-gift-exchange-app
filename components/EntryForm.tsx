@@ -12,7 +12,7 @@ interface BookDetails {
     thumbnail: string;
 }
 
-export default function EntryForm({ onEntryAdded }: { onEntryAdded: () => void }) {
+export default function EntryForm({ onEntryAdded, refreshTrigger }: { onEntryAdded: () => void; refreshTrigger?: number }) {
     const [mode, setMode] = useState<"checkin" | "new">("checkin");
     const [existingParticipants, setExistingParticipants] = useState<Participant[]>([]);
     const [selectedParticipantId, setSelectedParticipantId] = useState<string | null>(null);
@@ -34,10 +34,10 @@ export default function EntryForm({ onEntryAdded }: { onEntryAdded: () => void }
     const [submitting, setSubmitting] = useState(false);
     const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
-    // Load participants for search
+    // Load participants for search - refresh when refreshTrigger changes
     useEffect(() => {
         loadParticipants();
-    }, []);
+    }, [refreshTrigger]);
 
     const loadParticipants = async () => {
         const data = await getParticipants();
@@ -199,7 +199,7 @@ export default function EntryForm({ onEntryAdded }: { onEntryAdded: () => void }
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             placeholder="Search by Name or ID..."
-                            className="pl-10 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm p-3 border"
+                            className="pl-10 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm p-3 border placeholder:text-gray-700"
                         />
                     </div>
                     {searchQuery && (
@@ -253,7 +253,7 @@ export default function EntryForm({ onEntryAdded }: { onEntryAdded: () => void }
                                     value={name}
                                     onChange={(e) => setName(e.target.value)}
                                     disabled={mode === "checkin"}
-                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm p-2 border disabled:bg-gray-100 disabled:text-gray-500"
+                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm p-2 border disabled:bg-gray-100 disabled:text-gray-500 placeholder:text-gray-700"
                                     placeholder="Santa Claus"
                                 />
                             </div>
@@ -265,7 +265,7 @@ export default function EntryForm({ onEntryAdded }: { onEntryAdded: () => void }
                                     value={id}
                                     onChange={(e) => setId(e.target.value)}
                                     disabled={mode === "checkin"}
-                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm p-2 border disabled:bg-gray-100 disabled:text-gray-500"
+                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm p-2 border disabled:bg-gray-100 disabled:text-gray-500 placeholder:text-gray-700"
                                     placeholder="001"
                                 />
                             </div>
@@ -290,7 +290,7 @@ export default function EntryForm({ onEntryAdded }: { onEntryAdded: () => void }
                                     value={isbn}
                                     onChange={(e) => setIsbn(e.target.value)}
                                     onBlur={() => isbn && !manualEntry && fetchBookDetails(isbn)}
-                                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm p-2 border"
+                                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm p-2 border placeholder:text-gray-700"
                                     placeholder="ISBN (Scan or Type)"
                                 />
                                 <button
@@ -311,7 +311,7 @@ export default function EntryForm({ onEntryAdded }: { onEntryAdded: () => void }
                                     value={bookTitle}
                                     onChange={(e) => setBookTitle(e.target.value)}
                                     disabled={!manualEntry}
-                                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm p-2 border disabled:bg-gray-100"
+                                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm p-2 border disabled:bg-gray-100 disabled:text-gray-900"
                                     placeholder="Book Title"
                                 />
                                 <input
@@ -319,7 +319,7 @@ export default function EntryForm({ onEntryAdded }: { onEntryAdded: () => void }
                                     value={bookAuthors}
                                     onChange={(e) => setBookAuthors(e.target.value)}
                                     disabled={!manualEntry}
-                                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm p-2 border disabled:bg-gray-100"
+                                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm p-2 border disabled:bg-gray-100 disabled:text-gray-900"
                                     placeholder="Authors (comma separated)"
                                 />
                                 <textarea
@@ -327,7 +327,7 @@ export default function EntryForm({ onEntryAdded }: { onEntryAdded: () => void }
                                     onChange={(e) => setBookDescription(e.target.value)}
                                     disabled={!manualEntry}
                                     rows={3}
-                                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm p-2 border disabled:bg-gray-100"
+                                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm p-2 border disabled:bg-gray-100 disabled:text-gray-900"
                                     placeholder="Book Description / Summary"
                                 />
                             </div>
@@ -343,7 +343,7 @@ export default function EntryForm({ onEntryAdded }: { onEntryAdded: () => void }
                                 value={wishlist}
                                 onChange={(e) => setWishlist(e.target.value)}
                                 rows={3}
-                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm p-2 border"
+                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm p-2 border placeholder:text-gray-700"
                                 placeholder="I like sci-fi and mystery novels..."
                             />
                         </div>

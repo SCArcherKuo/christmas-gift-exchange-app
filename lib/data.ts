@@ -79,27 +79,33 @@ export async function saveParticipant(participant: Participant): Promise<Partici
 }
 
 export async function deleteParticipant(id: string): Promise<void> {
-  if (API_URL) {
-    try {
-      await fetch(API_URL, {
-        method: "POST",
-        mode: "no-cors",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ action: 'delete', id }),
-      });
-    } catch (error) {
-      console.error("Failed to delete from Google Sheets", error);
-    }
-  }
-
-  // Update LocalStorage
+  // Update LocalStorage first
   const participants = await getParticipants();
   const updatedParticipants = participants.filter(p => p.id !== id);
 
   if (typeof window !== "undefined") {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedParticipants));
+  }
+
+  // Try to delete from Google Sheets
+  if (API_URL) {
+    try {
+      // Remove no-cors to allow JSON body to be sent
+      const response = await fetch(API_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ action: 'delete', id }),
+      });
+
+      // Log any issues but don't fail
+      if (!response.ok) {
+        console.warn("Delete request completed but response not OK:", response.status);
+      }
+    } catch (error) {
+      console.error("Failed to delete from Google Sheets", error);
+    }
   }
 }
 
