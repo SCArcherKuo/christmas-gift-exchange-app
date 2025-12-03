@@ -103,8 +103,11 @@ export default function ParticipantList({
           <tbody className="bg-white divide-y divide-gray-200">
             {participants.map((p) => (
               <tr key={p.id}>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {p.id}
+                <td
+                  className="px-6 py-4 whitespace-nowrap text-sm text-gray-900"
+                  title={p.id}
+                >
+                  {p.id.substring(0, 8)}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                   {p.name}
@@ -121,9 +124,7 @@ export default function ParticipantList({
                     title={p.bookDescription || "No description"}
                   >
                     {p.bookDescription || (
-                      <span className="text-gray-400 italic">
-                        無描述
-                      </span>
+                      <span className="text-gray-400 italic">無描述</span>
                     )}
                   </div>
                 </td>

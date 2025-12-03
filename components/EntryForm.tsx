@@ -9,17 +9,11 @@ import {
   XCircle,
   Search,
   UserCheck,
-  UserPlus,
   Edit3,
 } from "lucide-react";
 import { saveParticipant, getParticipants, Participant } from "@/lib/data";
-
-interface BookDetails {
-  title: string;
-  authors: string[];
-  description: string;
-  thumbnail: string;
-}
+import { v4 as uuidv4 } from "uuid";
+import Image from "next/image";
 
 export default function EntryForm({
   onEntryAdded,
@@ -61,6 +55,13 @@ export default function EntryForm({
     loadParticipants();
   }, [refreshTrigger]);
 
+  // Initialize ID with UUID when component loads and mode is new
+  useEffect(() => {
+    if (mode === "new" && !id) {
+      setId(uuidv4());
+    }
+  }, [mode, id]);
+
   const loadParticipants = async () => {
     const data = await getParticipants();
     setExistingParticipants(data);
@@ -99,8 +100,8 @@ export default function EntryForm({
         console.error("Book not found");
         setManualEntry(true);
       }
-    } catch (error) {
-      console.error("Error fetching book", error);
+    } catch (fetchError) {
+      console.error("Error fetching book", fetchError);
       setManualEntry(true);
     } finally {
       setLoadingBook(false);
@@ -139,22 +140,6 @@ export default function EntryForm({
 
     // Validation: Check for duplicate ID in 'new' mode
     if (mode === "new") {
-      // Validate ID is a positive integer
-      const idNum = parseInt(id, 10);
-      if (
-        isNaN(idNum) ||
-        idNum <= 0 ||
-        !Number.isInteger(idNum) ||
-        id !== idNum.toString()
-      ) {
-        setMessage({
-          type: "error",
-          text: "ID 必須是正整數。請輸入有效數字。",
-        });
-        setSubmitting(false);
-        return;
-      }
-
       // Fetch fresh participant data to ensure we have the latest list for duplicate checking
       const currentParticipants = await getParticipants();
       const duplicate = currentParticipants.find(
@@ -191,7 +176,7 @@ export default function EntryForm({
       // Reset form
       if (mode === "new") {
         setName("");
-        setId("");
+        setId(uuidv4()); // Generate new UUID for next participant
         setWishlist("");
       } else {
         setSelectedParticipantId(null);
@@ -211,7 +196,8 @@ export default function EntryForm({
         onEntryAdded();
         loadParticipants(); // Reload for next search
       }, 1000);
-    } catch (error) {
+    } catch (submitError) {
+      console.error("Error submitting participant:", submitError);
       setMessage({ type: "error", text: "發生錯誤。" });
     } finally {
       setSubmitting(false);
@@ -247,7 +233,7 @@ export default function EntryForm({
               setMessage(null);
               setSelectedParticipantId(null);
               setName("");
-              setId("");
+              setId(uuidv4()); // Generate UUID when switching to new mode
               setWishlist("");
             }}
             className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${mode === "new" ? "bg-white shadow text-red-600" : "text-gray-500 hover:text-gray-700"}`}
@@ -283,7 +269,9 @@ export default function EntryForm({
                   >
                     <div>
                       <p className="font-medium text-gray-900">{p.name}</p>
-                      <p className="text-xs text-gray-500">ID: {p.id}</p>
+                      <p className="text-xs text-gray-500" title={p.id}>
+                        ID: {p.id.substring(0, 8)}
+                      </p>
                     </div>
                     {p.bookIsbn ? (
                       <CheckCircle className="w-4 h-4 text-green-500" />
@@ -310,7 +298,9 @@ export default function EntryForm({
                 <p className="text-sm text-blue-700 font-medium">
                   報到中：<span className="font-bold">{name}</span>
                 </p>
-                <p className="text-xs text-blue-500">ID: {id}</p>
+                <p className="text-xs text-blue-500" title={id}>
+                  ID: {id.substring(0, 8)}
+                </p>
               </div>
               <button
                 onClick={() => setSelectedParticipantId(null)}
@@ -346,19 +336,16 @@ export default function EntryForm({
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700">
-                  參加者 ID
+                  參加者 ID (UUID)
                 </label>
                 <input
-                  type="number"
+                  type="text"
                   required
-                  min="1"
-                  step="1"
-                  pattern="[0-9]+"
                   value={id}
                   onChange={(e) => setId(e.target.value)}
-                  disabled={mode === "checkin"}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm p-2 border disabled:bg-gray-100 disabled:text-gray-500 placeholder:text-gray-700"
-                  placeholder="1"
+                  disabled={true}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm p-2 border bg-gray-100 text-gray-500 placeholder:text-gray-700"
+                  placeholder="自動生成的 UUID"
                 />
               </div>
             </div>
@@ -429,9 +416,11 @@ export default function EntryForm({
                 />
               </div>
               {bookThumbnail && (
-                <img
+                <Image
                   src={bookThumbnail}
                   alt="Cover"
+                  width={64}
+                  height={96}
                   className="w-16 h-24 object-cover rounded shadow-sm"
                 />
               )}
