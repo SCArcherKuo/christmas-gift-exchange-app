@@ -91,7 +91,7 @@ export default function EntryForm({
         } else {
           setMessage({
             type: "error",
-            text: "Book not found. Please enter details manually.",
+            text: "找不到書籍。請手動輸入詳細資料。",
           });
           setManualEntry(true);
         }
@@ -115,7 +115,7 @@ export default function EntryForm({
     if (p.bookIsbn) {
       setMessage({
         type: "error",
-        text: "Note: This participant already has a book. Submitting will update their book information.",
+        text: "注意：此參加者已有書籍。送出將更新其書籍資訊。",
       });
       setIsbn(p.bookIsbn);
       setBookTitle(p.bookTitle);
@@ -149,7 +149,7 @@ export default function EntryForm({
       ) {
         setMessage({
           type: "error",
-          text: "ID must be a positive integer (serial number). Please enter a valid number.",
+          text: "ID 必須是正整數。請輸入有效數字。",
         });
         setSubmitting(false);
         return;
@@ -163,7 +163,7 @@ export default function EntryForm({
       if (duplicate) {
         setMessage({
           type: "error",
-          text: `ID '${id}' already exists (Participant: ${duplicate.name}). Please use a unique ID.`,
+          text: `ID '${id}' 已存在（參加者：${duplicate.name}）。請使用唯一 ID。`,
         });
         setSubmitting(false);
         return;
@@ -185,8 +185,7 @@ export default function EntryForm({
 
       setMessage({
         type: "success",
-        text:
-          mode === "checkin" ? "Check-in successful!" : "Participant added!",
+        text: mode === "checkin" ? "報到成功！" : "參加者已新增！",
       });
 
       // Reset form
@@ -213,7 +212,7 @@ export default function EntryForm({
         loadParticipants(); // Reload for next search
       }, 1000);
     } catch (error) {
-      setMessage({ type: "error", text: "An error occurred." });
+      setMessage({ type: "error", text: "發生錯誤。" });
     } finally {
       setSubmitting(false);
     }
@@ -230,7 +229,7 @@ export default function EntryForm({
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
           <Book className="w-6 h-6 text-red-600" />
-          {mode === "checkin" ? "Event Check-in" : "New Registration"}
+          {mode === "checkin" ? "活動報到" : "新登記"}
         </h2>
         <div className="flex bg-gray-100 p-1 rounded-lg">
           <button
@@ -240,7 +239,7 @@ export default function EntryForm({
             }}
             className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${mode === "checkin" ? "bg-white shadow text-red-600" : "text-gray-500 hover:text-gray-700"}`}
           >
-            Check-in
+            報到
           </button>
           <button
             onClick={() => {
@@ -253,7 +252,7 @@ export default function EntryForm({
             }}
             className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${mode === "new" ? "bg-white shadow text-red-600" : "text-gray-500 hover:text-gray-700"}`}
           >
-            New
+            新增
           </button>
         </div>
       </div>
@@ -261,7 +260,7 @@ export default function EntryForm({
       {mode === "checkin" && !selectedParticipantId && (
         <div className="mb-6 relative">
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Search Pre-registered Participant
+            搜尋已預先報名的參加者
           </label>
           <div className="relative">
             <Search className="w-5 h-5 absolute left-3 top-3 text-gray-400" />
@@ -269,7 +268,7 @@ export default function EntryForm({
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search by Name or ID..."
+              placeholder="以姓名或 ID 搜尋..."
               className="pl-10 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm p-3 border placeholder:text-gray-700"
             />
           </div>
@@ -295,7 +294,7 @@ export default function EntryForm({
                 ))
               ) : (
                 <div className="px-4 py-3 text-sm text-gray-500">
-                  No participants found.
+                  找不到參加者。
                 </div>
               )}
             </div>
@@ -309,7 +308,7 @@ export default function EntryForm({
             <div className="mb-6 bg-blue-50 p-4 rounded-lg flex justify-between items-center">
               <div>
                 <p className="text-sm text-blue-700 font-medium">
-                  Checking in: <span className="font-bold">{name}</span>
+                  報到中：<span className="font-bold">{name}</span>
                 </p>
                 <p className="text-xs text-blue-500">ID: {id}</p>
               </div>
@@ -317,14 +316,14 @@ export default function EntryForm({
                 onClick={() => setSelectedParticipantId(null)}
                 className="text-xs text-blue-600 hover:underline"
               >
-                Change
+                變更
               </button>
             </div>
           )}
 
           <div className="mb-6">
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Scan Book Barcode
+              掃描書本條碼
             </label>
             <Scanner onScanSuccess={handleScan} />
           </div>
@@ -333,7 +332,7 @@ export default function EntryForm({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700">
-                  Participant Name
+                  參加者姓名
                 </label>
                 <input
                   type="text"
@@ -342,12 +341,12 @@ export default function EntryForm({
                   onChange={(e) => setName(e.target.value)}
                   disabled={mode === "checkin"}
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm p-2 border disabled:bg-gray-100 disabled:text-gray-500 placeholder:text-gray-700"
-                  placeholder="Santa Claus"
+                  placeholder="聖誕老人"
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700">
-                  Participant ID (Serial Number)
+                  參加者 ID
                 </label>
                 <input
                   type="number"
@@ -367,14 +366,14 @@ export default function EntryForm({
             {/* Book Details Section */}
             <div className="bg-gray-50 p-4 rounded-lg border border-gray-200 space-y-3">
               <div className="flex justify-between items-center">
-                <h3 className="font-medium text-gray-900">Book Details</h3>
+                <h3 className="font-medium text-gray-900">書本詳細資料</h3>
                 <button
                   type="button"
                   onClick={() => setManualEntry(!manualEntry)}
                   className="text-xs text-red-600 hover:underline flex items-center gap-1"
                 >
                   <Edit3 className="w-3 h-3" />{" "}
-                  {manualEntry ? "Cancel Edit" : "Edit Manually"}
+                  {manualEntry ? "取消編輯" : "手動編輯"}
                 </button>
               </div>
 
@@ -385,7 +384,7 @@ export default function EntryForm({
                   onChange={(e) => setIsbn(e.target.value)}
                   onBlur={() => isbn && !manualEntry && fetchBookDetails(isbn)}
                   className="block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm p-2 border placeholder:text-gray-700"
-                  placeholder="ISBN (Scan or Type)"
+                  placeholder="ISBN（掃描或輸入）"
                 />
                 <button
                   type="button"
@@ -393,13 +392,13 @@ export default function EntryForm({
                   disabled={loadingBook || !isbn}
                   className="px-3 py-2 bg-white border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 disabled:opacity-50 text-sm"
                 >
-                  Lookup
+                  查詢
                 </button>
               </div>
 
               {loadingBook && (
                 <div className="text-sm text-gray-500 flex items-center gap-2">
-                  <Loader2 className="w-4 h-4 animate-spin" /> Fetching info...
+                  <Loader2 className="w-4 h-4 animate-spin" /> 正在取得資訊...
                 </div>
               )}
 
@@ -410,7 +409,7 @@ export default function EntryForm({
                   onChange={(e) => setBookTitle(e.target.value)}
                   disabled={!manualEntry}
                   className="block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm p-2 border disabled:bg-gray-100 disabled:text-gray-900"
-                  placeholder="Book Title"
+                  placeholder="書名"
                 />
                 <input
                   type="text"
@@ -418,7 +417,7 @@ export default function EntryForm({
                   onChange={(e) => setBookAuthors(e.target.value)}
                   disabled={!manualEntry}
                   className="block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm p-2 border disabled:bg-gray-100 disabled:text-gray-900"
-                  placeholder="Authors (comma separated)"
+                  placeholder="作者（逗號分隔）"
                 />
                 <textarea
                   value={bookDescription}
@@ -426,7 +425,7 @@ export default function EntryForm({
                   disabled={!manualEntry}
                   rows={3}
                   className="block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm p-2 border disabled:bg-gray-100 disabled:text-gray-900"
-                  placeholder="Book Description / Summary"
+                  placeholder="書籍描述 / 摘要"
                 />
               </div>
               {bookThumbnail && (
@@ -440,7 +439,7 @@ export default function EntryForm({
 
             <div>
               <label className="block text-sm font-medium text-gray-700">
-                Wishlist / Preferences
+                願望清單 / 喜好
               </label>
               <textarea
                 required
@@ -448,7 +447,7 @@ export default function EntryForm({
                 onChange={(e) => setWishlist(e.target.value)}
                 rows={3}
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm p-2 border placeholder:text-gray-700"
-                placeholder="I like sci-fi and mystery novels..."
+                placeholder="我喜歡科幻和懸疑小說..."
               />
             </div>
 
@@ -458,10 +457,10 @@ export default function EntryForm({
               className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50"
             >
               {submitting
-                ? "Saving..."
+                ? "儲存中..."
                 : mode === "checkin"
-                  ? "Check In & Update Record"
-                  : "Add Participant"}
+                  ? "報到並更新紀錄"
+                  : "新增參加者"}
             </button>
 
             {message && (

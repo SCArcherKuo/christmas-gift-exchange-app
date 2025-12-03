@@ -43,7 +43,7 @@ export default function Scanner({ onScanSuccess }: ScannerProps) {
     return () => {
       if (scannerRef.current) {
         scannerRef.current.clear().catch((error) => {
-          console.error("Failed to clear html5-qrcode scanner. ", error);
+          console.error("無法清除 html5-qrcode 掃描器。 ", error);
         });
         scannerRef.current = null;
       }
@@ -55,7 +55,7 @@ export default function Scanner({ onScanSuccess }: ScannerProps) {
       <div id="reader" className="w-full"></div>
       {scanResult && (
         <p className="mt-2 text-center text-green-600 font-medium">
-          Scanned: {scanResult}
+          已掃描：{scanResult}
         </p>
       )}
     </div>

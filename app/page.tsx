@@ -24,10 +24,10 @@ export default function Home() {
             <Gift className="w-8 h-8 text-red-600" />
           </div>
           <h1 className="text-4xl md:text-5xl font-extrabold text-white mb-2 drop-shadow-md">
-            Christmas Book Exchange
+            聖誕禮物 AI 發送器
           </h1>
           <p className="text-red-100 text-lg font-medium">
-            Share a story, receive a surprise!
+            DevFest Tainan 2025
           </p>
         </header>
 
@@ -47,7 +47,7 @@ export default function Home() {
                 href="/match"
                 className="inline-flex items-center justify-center px-8 py-4 border border-transparent text-lg font-medium rounded-full text-red-700 bg-white hover:bg-red-50 shadow-lg transition-all hover:scale-105"
               >
-                Start Matching Event 🎄
+                開始交換活動 🎄
               </Link>
             </div>
           </div>

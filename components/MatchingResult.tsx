@@ -27,7 +27,7 @@ export default function MatchingResult({ participants }: MatchingResultProps) {
           >
             <div className="bg-red-600 px-4 py-2 flex justify-between items-center">
               <span className="text-white font-bold flex items-center gap-2">
-                <Gift className="w-4 h-4" /> Match Found!
+                <Gift className="w-4 h-4" /> 找到配對！
               </span>
             </div>
             <div className="p-6 space-y-4">
@@ -37,7 +37,7 @@ export default function MatchingResult({ participants }: MatchingResultProps) {
                 </div>
                 <div>
                   <p className="text-xs text-gray-500 uppercase font-semibold">
-                    Recipient
+                    接收者
                   </p>
                   <p className="text-lg font-bold text-gray-800">
                     {recipient.name}
@@ -47,17 +47,17 @@ export default function MatchingResult({ participants }: MatchingResultProps) {
 
               <div className="border-l-4 border-red-200 pl-4 py-1">
                 <p className="text-xs text-gray-500 uppercase font-semibold mb-1">
-                  Receives
+                  收到
                 </p>
                 <div className="flex items-start gap-2">
                   <BookOpen className="w-5 h-5 text-red-500 mt-1 flex-shrink-0" />
                   <div>
                     <p className="font-bold text-gray-900">{donor.bookTitle}</p>
                     <p className="text-sm text-gray-600">
-                      by {donor.bookAuthors.join(", ")}
+                      作者：{donor.bookAuthors.join(", ")}
                     </p>
                     <p className="text-xs text-gray-400 mt-1">
-                      From: {donor.name}
+                      來自：{donor.name}
                     </p>
                   </div>
                 </div>

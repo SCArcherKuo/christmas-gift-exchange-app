@@ -51,8 +51,8 @@ export default function ParticipantList({
       await deleteParticipant(participantToDelete.id);
       await fetchParticipants();
     } catch (error) {
-      console.error("Failed to delete", error);
-      alert("Failed to delete participant.");
+      console.error("刪除失敗", error);
+      alert("刪除參加者失敗。");
     } finally {
       setIsDeleting(false);
       setParticipantToDelete(null);
@@ -64,7 +64,7 @@ export default function ParticipantList({
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
           <Users className="w-6 h-6 text-green-600" />
-          Participants ({participants.length})
+          參加者 ({participants.length})
         </h2>
         <button
           onClick={fetchParticipants}
@@ -84,19 +84,19 @@ export default function ParticipantList({
                 ID
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Name
+                姓名
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Brought Book
+                攜帶書籍
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Description
+                描述
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Wishlist
+                願望清單
               </th>
               <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Actions
+                操作
               </th>
             </tr>
           </thead>
@@ -122,7 +122,7 @@ export default function ParticipantList({
                   >
                     {p.bookDescription || (
                       <span className="text-gray-400 italic">
-                        No description
+                        無描述
                       </span>
                     )}
                   </div>
@@ -138,7 +138,7 @@ export default function ParticipantList({
                     type="button"
                     onClick={(e) => handleDeleteClick(p, e)}
                     className="text-red-600 hover:text-red-900 transition-colors"
-                    title="Delete participant"
+                    title="刪除參加者"
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>
@@ -151,7 +151,7 @@ export default function ParticipantList({
                   colSpan={6}
                   className="px-6 py-4 text-center text-sm text-gray-500"
                 >
-                  No participants yet.
+                  尚無參加者。
                 </td>
               </tr>
             )}
@@ -163,8 +163,8 @@ export default function ParticipantList({
         isOpen={!!participantToDelete}
         onClose={() => setParticipantToDelete(null)}
         onConfirm={handleConfirmDelete}
-        title="Delete Participant"
-        message={`Are you sure you want to delete ${participantToDelete?.name}? This action cannot be undone.`}
+        title="刪除參加者"
+        message={`您確定要刪除 ${participantToDelete?.name} 嗎？此操作無法復原。`}
         isDeleting={isDeleting}
       />
     </div>

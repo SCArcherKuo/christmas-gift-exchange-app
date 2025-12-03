@@ -46,7 +46,7 @@ export default function DeleteConfirmModal({
             disabled={isDeleting}
             className="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium transition-colors disabled:opacity-50"
           >
-            Cancel
+            取消
           </button>
           <button
             onClick={onConfirm}
@@ -56,10 +56,10 @@ export default function DeleteConfirmModal({
             {isDeleting ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin" />
-                Deleting...
+                刪除中...
               </>
             ) : (
-              "Delete"
+              "刪除"
             )}
           </button>
         </div>
