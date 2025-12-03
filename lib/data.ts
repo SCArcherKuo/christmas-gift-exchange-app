@@ -14,7 +14,11 @@ export interface Participant {
 
 const STORAGE_KEY = "gift-exchange-participants";
 const API_URL = process.env.NEXT_PUBLIC_GOOGLE_SCRIPT_URL;
-console.log("Google Script URL Configured:", !!API_URL, API_URL ? API_URL.substring(0, 10) + "..." : "N/A");
+console.log(
+  "Google Script URL Configured:",
+  !!API_URL,
+  API_URL ? API_URL.substring(0, 10) + "..." : "N/A"
+);
 
 export async function getParticipants(): Promise<Participant[]> {
   // If API URL is set, fetch from Google Sheets
@@ -29,7 +33,9 @@ export async function getParticipants(): Promise<Participant[]> {
       console.error("Failed to fetch from Google Sheets", error);
     }
   } else {
-    console.warn("Google Sheets API URL is not configured. Falling back to LocalStorage. Check your .env.local or GitHub Secrets.");
+    console.warn(
+      "Google Sheets API URL is not configured. Falling back to LocalStorage. Check your .env.local or GitHub Secrets."
+    );
   }
 
   // Fallback to LocalStorage
@@ -44,7 +50,9 @@ export async function getParticipants(): Promise<Participant[]> {
   }
 }
 
-export async function saveParticipant(participant: Participant): Promise<Participant> {
+export async function saveParticipant(
+  participant: Participant
+): Promise<Participant> {
   if (API_URL) {
     try {
       await fetch(API_URL, {
@@ -64,7 +72,7 @@ export async function saveParticipant(participant: Participant): Promise<Partici
   // Always save to LocalStorage as backup/cache
   const participants = await getParticipants();
   // Check if already exists to avoid duplicates in local (though API might handle it differently)
-  const existingIdx = participants.findIndex(p => p.id === participant.id);
+  const existingIdx = participants.findIndex((p) => p.id === participant.id);
   if (existingIdx > -1) {
     participants[existingIdx] = participant;
   } else {
@@ -81,7 +89,7 @@ export async function saveParticipant(participant: Participant): Promise<Partici
 export async function deleteParticipant(id: string): Promise<void> {
   // Update LocalStorage first
   const participants = await getParticipants();
-  const updatedParticipants = participants.filter(p => p.id !== id);
+  const updatedParticipants = participants.filter((p) => p.id !== id);
 
   if (typeof window !== "undefined") {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedParticipants));
@@ -97,7 +105,7 @@ export async function deleteParticipant(id: string): Promise<void> {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ action: 'delete', id }),
+        body: JSON.stringify({ action: "delete", id }),
       });
 
       // With no-cors, we can't check response.ok
