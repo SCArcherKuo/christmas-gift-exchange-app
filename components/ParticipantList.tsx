@@ -1,8 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Users, RefreshCw, Trash2, Loader2 } from "lucide-react";
-import { getParticipants, deleteParticipant, Participant } from "@/lib/data";
+import { Users, RefreshCw, Trash2 } from "lucide-react";
+import {
+  getParticipants,
+  deleteParticipant,
+  Participant,
+  getFullName,
+} from "@/lib/data";
 import DeleteConfirmModal from "./DeleteConfirmModal";
 
 export default function ParticipantList({
@@ -83,8 +88,14 @@ export default function ParticipantList({
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[100px]">
                 ID
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[100px]">
-                姓名
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[120px]">
+                姓
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[120px]">
+                名
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[180px]">
+                Email
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[100px]">
                 攜帶書籍
@@ -110,7 +121,16 @@ export default function ParticipantList({
                   {p.id.substring(0, 8)}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                  {p.name}
+                  {p.lastName}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                  {p.firstName}
+                </td>
+                <td
+                  className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 truncate max-w-xs"
+                  title={p.email}
+                >
+                  {p.email}
                 </td>
                 <td
                   className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 truncate max-w-xs"
@@ -149,7 +169,7 @@ export default function ParticipantList({
             {participants.length === 0 && !loading && (
               <tr>
                 <td
-                  colSpan={6}
+                  colSpan={8}
                   className="px-6 py-4 text-center text-sm text-gray-500"
                 >
                   尚無參加者。
@@ -165,7 +185,7 @@ export default function ParticipantList({
         onClose={() => setParticipantToDelete(null)}
         onConfirm={handleConfirmDelete}
         title="刪除參加者"
-        message={`您確定要刪除 ${participantToDelete?.name} 嗎？此操作無法復原。`}
+        message={`您確定要刪除 ${participantToDelete ? getFullName(participantToDelete) : ""} 嗎？此操作無法復原。`}
         isDeleting={isDeleting}
       />
     </div>

@@ -56,36 +56,64 @@ export default function MatchPage() {
         你是聖誕交換禮物配對引擎。
         我有一份參加者清單，每個人都帶了一本書並有一份願望清單。
         
-        規則：
-        1. 每位參加者必須恰好收到一本書。
-        2. 參加者不能收到自己帶來的書。
-        3. 盡量將書籍與參加者的願望清單進行最佳配對。
-        4. 使用書籍描述來理解書的內容，並與願望清單進行配對。
-        5. 提供有趣的、聖誕主題的配對理由，引用書籍內容。
+        重要規則：
+        1. 首先將所有參加者分為兩組：「紅組」和「棕組」
+        2. 紅組的成員只能收到棕組成員帶來的書
+        3. 棕組的成員只能收到紅組成員帶來的書
+        4. 每位參加者必須恰好收到一本書
+        5. 參加者不能收到自己帶來的書
+        6. 盡量將書籍與參加者的願望清單進行最佳配對
+        7. 使用書籍描述來理解書的內容，並與願望清單進行配對
+        8. 提供有趣的、聖誕主題的配對理由，引用書籍內容
+
+        分組策略：
+        - 盡量讓每組人數平均
+        - 可考慮書籍類型多樣性來分組，讓交換更有趣
         
-        參加者：
+        配對邏輯說明：
+        - 每個參加者的「wishlist」是他們希望收到的書籍類型/主題
+        - 配對理由（reason）應該解釋為什麼「送禮者帶來的書」適合「收禮者的願望清單」
+        - 配對理由應基於：送禮者的 bookTitle、bookAuthors、bookDescription 與收禮者的 wishlist 的關聯性
+        - 不要將送禮者的 wishlist 與收禮者的 assignedReason 混淆
+        
+        參加者資料：
         ${JSON.stringify(
           currentParticipants.map((p) => ({
             id: p.id,
-            name: p.name,
-            broughtBookId: p.id, // Using participant ID as book ID for simplicity since 1 person = 1 book
-            broughtBookTitle: p.bookTitle,
-            broughtBookAuthors: p.bookAuthors,
-            broughtBookDescription: p.bookDescription, // Added description
-            wishlist: p.wishlist,
+            firstName: p.firstName,
+            lastName: p.lastName,
+            email: p.email,
+            broughtBook: {
+              title: p.bookTitle,
+              authors: p.bookAuthors,
+              description: p.bookDescription,
+            },
+            wishlist: p.wishlist, // 此人希望收到的書籍類型
           })),
           null,
           2
         )}
 
-        輸出必須是以下結構的有效 JSON 陣列：
-        [
-          {
-            "recipientId": "participant_id",
-            "assignedBookFromId": "donor_participant_id",
-            "reason": "此配對的理由..."
-          }
-        ]
+        配對範例說明：
+        如果參加者A帶了《哈利波特》(奇幻小說)，參加者B的wishlist是「喜歡奇幻和冒險小說」，
+        那麼配對理由應該是：「《哈利波特》是經典奇幻冒險小說，完美符合您對奇幻題材的喜好...」
+
+        輸出必須是以下結構的有效 JSON：
+        {
+          "groupAssignments": [
+            {
+              "participantId": "participant_id",
+              "group": "red" // 或 "brown"
+            }
+          ],
+          "matches": [
+            {
+              "recipientId": "收禮者ID",
+              "assignedBookFromId": "送禮者ID",
+              "reason": "解釋為什麼送禮者的書適合收禮者的wishlist"
+            }
+          ]
+        }
         請勿包含如 \`\`\`json 這樣的 markdown 格式。只要純 JSON。
       `;
 
@@ -96,9 +124,9 @@ export default function MatchPage() {
         .replace(/```/g, "")
         .trim();
 
-      let matches;
+      let aiResult;
       try {
-        matches = JSON.parse(responseText);
+        aiResult = JSON.parse(responseText);
       } catch (e) {
         console.error("無法解析 AI 回應", responseText);
         setError("AI 返回無效格式");
@@ -106,17 +134,32 @@ export default function MatchPage() {
         return;
       }
 
-      // Update participants with match data
+      if (!aiResult.groupAssignments || !aiResult.matches) {
+        setError("AI 回應格式不正確");
+        setLoading(false);
+        return;
+      }
+
+      // Update participants with group assignments and match data
       const updatedParticipants = currentParticipants.map((p) => {
-        const match = matches.find((m: any) => m.recipientId === p.id);
-        if (match) {
-          return {
-            ...p,
-            assignedBookId: match.assignedBookFromId,
-            assignedReason: match.reason,
-          };
-        }
-        return p;
+        const groupAssignment = aiResult.groupAssignments.find(
+          (g: { participantId: string; group: string }) =>
+            g.participantId === p.id
+        );
+        const match = aiResult.matches.find(
+          (m: {
+            recipientId: string;
+            assignedBookFromId: string;
+            reason: string;
+          }) => m.recipientId === p.id
+        );
+
+        return {
+          ...p,
+          group: groupAssignment ? groupAssignment.group : undefined,
+          assignedBookId: match ? match.assignedBookFromId : undefined,
+          assignedReason: match ? match.reason : undefined,
+        };
       });
 
       await saveAllParticipants(updatedParticipants);

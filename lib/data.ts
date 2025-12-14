@@ -2,7 +2,10 @@
 
 export interface Participant {
   id: string;
-  name: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  group?: "red" | "brown";
   bookIsbn: string;
   bookTitle: string;
   bookAuthors: string[];
@@ -19,6 +22,11 @@ console.log(
   !!API_URL,
   API_URL ? API_URL.substring(0, 10) + "..." : "N/A"
 );
+
+// Helper function to get full name for display
+export function getFullName(participant: Participant): string {
+  return `${participant.lastName} ${participant.firstName}`.trim();
+}
 
 export async function getParticipants(): Promise<Participant[]> {
   // If API URL is set, fetch from Google Sheets

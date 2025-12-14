@@ -11,7 +11,12 @@ import {
   UserCheck,
   Edit3,
 } from "lucide-react";
-import { saveParticipant, getParticipants, Participant } from "@/lib/data";
+import {
+  saveParticipant,
+  getParticipants,
+  Participant,
+  getFullName,
+} from "@/lib/data";
 import { v4 as uuidv4 } from "uuid";
 import Image from "next/image";
 
@@ -31,7 +36,9 @@ export default function EntryForm({
   >(null);
   const [searchQuery, setSearchQuery] = useState("");
 
-  const [name, setName] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
   const [id, setId] = useState("");
   const [isbn, setIsbn] = useState("");
   const [wishlist, setWishlist] = useState("");
@@ -110,7 +117,9 @@ export default function EntryForm({
 
   const handleSelectParticipant = (p: Participant) => {
     setSelectedParticipantId(p.id);
-    setName(p.name);
+    setFirstName(p.firstName);
+    setLastName(p.lastName);
+    setEmail(p.email);
     setId(p.id);
     setWishlist(p.wishlist);
     if (p.bookIsbn) {
@@ -148,7 +157,7 @@ export default function EntryForm({
       if (duplicate) {
         setMessage({
           type: "error",
-          text: `ID '${id}' 已存在（參加者：${duplicate.name}）。請使用唯一 ID。`,
+          text: `ID '${id}' 已存在（參加者：${getFullName(duplicate)}）。請使用唯一 ID。`,
         });
         setSubmitting(false);
         return;
@@ -158,7 +167,9 @@ export default function EntryForm({
     try {
       await saveParticipant({
         id,
-        name,
+        firstName,
+        lastName,
+        email,
         bookIsbn: isbn,
         bookTitle: bookTitle || "Unknown Title",
         bookAuthors: bookAuthors
@@ -175,12 +186,16 @@ export default function EntryForm({
 
       // Reset form
       if (mode === "new") {
-        setName("");
+        setFirstName("");
+        setLastName("");
+        setEmail("");
         setId(uuidv4()); // Generate new UUID for next participant
         setWishlist("");
       } else {
         setSelectedParticipantId(null);
-        setName("");
+        setFirstName("");
+        setLastName("");
+        setEmail("");
         setId("");
         setWishlist("");
       }
@@ -204,11 +219,15 @@ export default function EntryForm({
     }
   };
 
-  const filteredParticipants = existingParticipants.filter(
-    (p) =>
-      String(p.name).toLowerCase().includes(searchQuery.toLowerCase()) ||
-      String(p.id).toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredParticipants = existingParticipants.filter((p) => {
+    const fullName = getFullName(p).toLowerCase();
+    const query = searchQuery.toLowerCase();
+    return (
+      fullName.includes(query) ||
+      String(p.id).toLowerCase().includes(query) ||
+      String(p.email).toLowerCase().includes(query)
+    );
+  });
 
   return (
     <div className="bg-white p-6 rounded-xl shadow-md border border-gray-100">
@@ -232,7 +251,9 @@ export default function EntryForm({
               setMode("new");
               setMessage(null);
               setSelectedParticipantId(null);
-              setName("");
+              setFirstName("");
+              setLastName("");
+              setEmail("");
               setId(uuidv4()); // Generate UUID when switching to new mode
               setWishlist("");
             }}
@@ -268,7 +289,9 @@ export default function EntryForm({
                     className="w-full text-left px-4 py-3 hover:bg-red-50 flex justify-between items-center border-b border-gray-100 last:border-0"
                   >
                     <div>
-                      <p className="font-medium text-gray-900">{p.name}</p>
+                      <p className="font-medium text-gray-900">
+                        {getFullName(p)}
+                      </p>
                       <p className="text-xs text-gray-500" title={p.id}>
                         ID: {p.id.substring(0, 8)}
                       </p>
@@ -296,7 +319,10 @@ export default function EntryForm({
             <div className="mb-6 bg-blue-50 p-4 rounded-lg flex justify-between items-center">
               <div>
                 <p className="text-sm text-blue-700 font-medium">
-                  報到中：<span className="font-bold">{name}</span>
+                  報到中：
+                  <span className="font-bold">
+                    {lastName} {firstName}
+                  </span>
                 </p>
                 <p className="text-xs text-blue-500" title={id}>
                   ID: {id.substring(0, 8)}
@@ -322,32 +348,62 @@ export default function EntryForm({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700">
-                  參加者姓名
+                  姓氏
                 </label>
                 <input
                   type="text"
                   required
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
                   disabled={mode === "checkin"}
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm p-2 border disabled:bg-gray-100 disabled:text-gray-500 placeholder:text-gray-700"
-                  placeholder="聖誕老人"
+                  placeholder="陳"
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700">
-                  參加者 ID (UUID)
+                  名字
                 </label>
                 <input
                   type="text"
                   required
-                  value={id}
-                  onChange={(e) => setId(e.target.value)}
-                  disabled={true}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm p-2 border bg-gray-100 text-gray-500 placeholder:text-gray-700"
-                  placeholder="自動生成的 UUID"
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  disabled={mode === "checkin"}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm p-2 border disabled:bg-gray-100 disabled:text-gray-500 placeholder:text-gray-700"
+                  placeholder="小明"
                 />
               </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                Email
+              </label>
+              <input
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                disabled={mode === "checkin"}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm p-2 border disabled:bg-gray-100 disabled:text-gray-500 placeholder:text-gray-700"
+                placeholder="example@email.com"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                參加者 ID (UUID)
+              </label>
+              <input
+                type="text"
+                required
+                value={id}
+                onChange={(e) => setId(e.target.value)}
+                disabled={true}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm p-2 border bg-gray-100 text-gray-500 placeholder:text-gray-700"
+                placeholder="自動生成的 UUID"
+              />
             </div>
 
             {/* Book Details Section */}
