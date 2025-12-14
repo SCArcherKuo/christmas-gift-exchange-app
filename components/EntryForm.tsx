@@ -94,7 +94,7 @@ export default function EntryForm({
           const book = data.items[0].volumeInfo;
           setBookTitle(book.title || "");
           setBookAuthors(book.authors ? book.authors.join(", ") : "");
-          setBookDescription(book.description || "");
+          setBookDescription(book.description || book.subtitle || "");
           setBookThumbnail(book.imageLinks?.thumbnail || "");
         } else {
           setMessage({
