@@ -45,7 +45,8 @@ export default function MatchPage() {
       setLoading(false);
       return;
     }
-    setParticipants(currentParticipants);
+    const participants = currentParticipants.filter((p) => p.bookTitle);
+    setParticipants(participants);
 
     try {
       const genAI = new GoogleGenerativeAI(apiKey);
@@ -79,7 +80,7 @@ export default function MatchPage() {
         
         參加者資料：
         ${JSON.stringify(
-          currentParticipants.map((p) => ({
+          participants.map((p) => ({
             id: p.id,
             firstName: p.firstName,
             lastName: p.lastName,
